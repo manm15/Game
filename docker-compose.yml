@@ -1,11 +1,13 @@
-version: '3.8'
+version: "3.9"
+
 services:
   gaming:
     build:
       context: .
-    command: bash -c "echo 'no' | /android-sdk/emulator/emulator -avd test -no-window -no-audio -gpu off -verbose & sleep 30 && adb wait-for-device && adb install /app/game.apk && novnc --listen 80 --vnc localhost:5900"
-    ports:
-      - "8080:8080"
-      - "9229:9229"
+      dockerfile: Dockerfile
     volumes:
-      - .:/app
+      - type: bind
+        source: ./app
+        target: /app
+    ports:
+      - "8080:80"
