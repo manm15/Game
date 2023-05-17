@@ -6,22 +6,12 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y wget unzip openjdk-11-jdk xvfb x11vnc fluxbox novnc
 
 # Download and install the Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip && \
-    unzip commandlinetools-linux-7302050_latest.zip -d cmdline-tools && \
-    rm commandlinetools-linux-7302050_latest.zip && \
-    mkdir android-sdk && \
-    mv cmdline-tools/android-sdk-*/* android-sdk && \
-    rm -rf cmdline-tools
-
-# Add the Android SDK to the PATH
-ENV PATH=$PATH:/android-sdk/platform-tools:/android-sdk/tools/bin
-
-# Accept the Android SDK licenses
-RUN yes | sdkmanager --licenses
-
-# Install an Android emulator
-RUN sdkmanager "system-images;android-30;google_apis;x86" && \
-    echo "no" | avdmanager create avd --force --name test --abi google_apis/x86 --package "system-images;android-30;google_apis;x86" && \
+RUN wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
+    unzip sdk-tools-linux-4333796.zip -d android-sdk && \
+    rm sdk-tools-linux-4333796.zip && \
+    yes | /android-sdk/tools/bin/sdkmanager --licenses && \
+    /android-sdk/tools/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86" && \
+    echo "no" | /android-sdk/tools/bin/avdmanager create avd --force --name test --abi google_apis/x86 --package "system-images;android-30;google_apis;x86" && \
     echo "hw.keyboard=yes" >> ~/.android/avd/test.avd/config.ini
 
 # Set up the VNC server
