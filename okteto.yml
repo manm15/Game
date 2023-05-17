@@ -2,8 +2,7 @@ name: gaming
 image: gaming:latest
 build:
   context: .
-deploy:
-  - helm upgrade --install gaming chart --set image=${OKTETO_BUILD_IMAGE}
+  chart: ./chart
 dev:
   command: bash -c "echo 'no' | /android-sdk/emulator/emulator -avd test -no-window -no-audio -gpu off -verbose & sleep 30 && adb wait-for-device && adb install /app/game.apk && novnc --listen 80 --vnc localhost:5900"
   forward:
