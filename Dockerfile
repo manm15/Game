@@ -1,10 +1,12 @@
-# Use the official Node.js image as the base image
-FROM node:14
+# Use the official Ubuntu image as the base image
+FROM ubuntu:20.04
 
-# Install the Android SDK
+# Install required dependencies
 RUN apt-get update && \
-    apt-get install -y wget unzip && \
-    wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y wget unzip openjdk-11-jdk xvfb x11vnc fluxbox novnc
+
+# Download and install the Android SDK
+RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip && \
     unzip commandlinetools-linux-7302050_latest.zip -d cmdline-tools && \
     rm commandlinetools-linux-7302050_latest.zip && \
     mkdir android-sdk && \
@@ -17,23 +19,17 @@ ENV PATH=$PATH:/android-sdk/platform-tools:/android-sdk/tools/bin
 # Accept the Android SDK licenses
 RUN yes | sdkmanager --licenses
 
-# Set the working directory to /app
-WORKDIR /app
+# Install an Android emulator
+RUN sdkmanager "system-images;android-30;google_apis;x86" && \
+    echo "no" | avdmanager create avd --force --name test --abi google_apis/x86 --package "system-images;android-30;google_apis;x86" && \
+    echo "hw.keyboard=yes" >> ~/.android/avd/test.avd/config.ini
 
-# Copy the package.json and package-lock.json files to the /app directory
-COPY package*.json ./
-
-# Install the dependencies
-RUN npm install
+# Set up the VNC server
+RUN mkdir ~/.vnc && \
+    x11vnc -storepasswd 1234 ~/.vnc/passwd
 
 # Copy the APK file to the /app directory
-COPY ./apps/gamename.apk /app
+COPY ./app/game.apk /app
 
-# Build the app
-RUN npm run build
-
-# Expose port 80
-EXPOSE 80
-
-# Start the app
-CMD ["npm", "start"]
+# Start the Android emulator and install the APK
+CMD ["bash", "-c", "echo 'no' | /android-sdk/emulator/emulator -avd test -no-window -no-audio -gpu off -verbose & sleep 30 && adb wait-for-device && adb install /app/game.apk && novnc --listen 80 --vnc localhost:5900"]
