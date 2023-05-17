@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  gaming:
+    build:
+      context: .
+    command: bash -c "echo 'no' | /android-sdk/emulator/emulator -avd test -no-window -no-audio -gpu off -verbose & sleep 30 && adb wait-for-device && adb install /app/game.apk && novnc --listen 80 --vnc localhost:5900"
+    ports:
+      - "8080:8080"
+      - "9229:9229"
+    volumes:
+      - .:/app
