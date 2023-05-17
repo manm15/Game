@@ -1,0 +1,10 @@
+name: gaming
+image: gaming:latest
+build: .
+command: bash -c "echo 'no' | /android-sdk/emulator/emulator -avd test -no-window -no-audio -gpu off -verbose & sleep 30 && adb wait-for-device && adb install /app/game.apk && novnc --listen 80 --vnc localhost:5900"
+annotations:
+  - key: "traefik.http.routers.gaming.rule"
+    value: "Host(`gaming-manm15.cloud.okteto.net`)"
+volumes:
+  - /app/node_modules
+  - .:/app
